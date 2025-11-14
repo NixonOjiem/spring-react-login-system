@@ -22,5 +22,10 @@ public class User {
     private String password; // Will store the HASHED password
 
     // Constructors (e.g., public User() {}, public User(String username, ...) {})
+    public User(String username, String email, String password) {
+        this.username = username;
+        this.email = email;
+        this.password = password; // This should be the encoded password
+    }
     // Getters and Setters (REQUIRED for JPA)
 }
