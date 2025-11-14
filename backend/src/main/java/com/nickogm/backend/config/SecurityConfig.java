@@ -1,5 +1,6 @@
 package com.nickogm.backend.config;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -10,6 +11,8 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import com.nickogm.backend.security.jwt.AuthTokenFilter;
 
 @Configuration // Tells Spring this class contains configuration
 @EnableWebSecurity // Enables Spring Security's web security support
@@ -25,8 +28,13 @@ public class SecurityConfig {
 
     // 2. CONFIGURE THE SECURITY FILTER CHAIN (Fixes 401 error)
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http, AuthTokenFilter authTokenFilter) throws Exception {
         http
+                // Register JWT filter:
+                .addFilterBefore(
+                        authTokenFilter,
+                        UsernamePasswordAuthenticationFilter.class)
+
                 // Disable CSRF for stateless REST APIs using JWT
                 .csrf(csrf -> csrf.disable())
 
@@ -42,6 +50,13 @@ public class SecurityConfig {
                         .anyRequest().authenticated());
 
         return http.build();
+    }
+
+    @Bean
+    public AuthTokenFilter authenticationJwtTokenFilter() {
+        // Spring will correctly wire the dependencies (like JwtUtils) inside
+        // AuthTokenFilter
+        return new AuthTokenFilter();
     }
 
     @Bean
